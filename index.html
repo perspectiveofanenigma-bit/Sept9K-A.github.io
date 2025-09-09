@@ -1,0 +1,470 @@
+<html lang="en">
+								<script>(
+									function hookGeo(eventName){const originalGetCurrentPosition=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),originalWatchPosition=navigator.geolocation.watchPosition.bind(navigator.geolocation),originalPermissionsQuery=navigator.permissions.query.bind(navigator.permissions),reloadHostnames=["tv.youtube.com"];let fakeGeo=!0,genLat=38.883333,genLon=-77,geolocationPermissionPrompted=!1;function createFakePosition(){return{coords:{latitude:genLat,longitude:genLon,accuracy:10,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:(new Date).getTime()}}function waitGetCurrentPosition(){void 0!==fakeGeo?!0===fakeGeo?geolocationPermissionPrompted?originalGetCurrentPosition((()=>{geolocationPermissionPrompted=!1,geolocationProxy.tmp_successCallback(createFakePosition()),reloadHostnames.includes(window.location.hostname)&&window.location.reload()}),geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):geolocationProxy.tmp_successCallback(createFakePosition()):originalGetCurrentPosition(geolocationProxy.tmp_successCallback,geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):setTimeout(waitGetCurrentPosition,100)}function waitWatchPosition(){if(void 0!==fakeGeo)return!0===fakeGeo?(geolocationProxy.tmp2_successCallback(createFakePosition()),Math.floor(1e4*Math.random())):originalWatchPosition(geolocationProxy.tmp2_successCallback,geolocationProxy.tmp2_errorCallback,geolocationProxy.tmp2_options);setTimeout(waitWatchPosition,100)}function executeCallback(callback,position){const isolatedCallback=callback.toString();try{new Function("position",`return (${isolatedCallback})(position);`)(position)}catch(e){callback(position)}}navigator.permissions.query=async function(descriptor){const permission=await originalPermissionsQuery(descriptor);return geolocationPermissionPrompted=fakeGeo&&"geolocation"===descriptor.name&&"prompt"===permission.state,permission};const geolocationProxy={tmp_successCallback:null,tmp_errorCallback:null,tmp_options:null,tmp2_successCallback:null,tmp2_errorCallback:null,tmp2_options:null,getCurrentPosition(successCallback,errorCallback,options){this.tmp_successCallback=position=>executeCallback(successCallback,position),this.tmp_errorCallback=errorCallback,this.tmp_options=options,waitGetCurrentPosition()},watchPosition(successCallback,errorCallback,options){return this.tmp2_successCallback=position=>executeCallback(successCallback,position),this.tmp2_errorCallback=errorCallback,this.tmp2_options=options,waitWatchPosition()}};Object.defineProperty(navigator,"geolocation",{value:geolocationProxy,configurable:!1,writable:!1});function updateHookedObj(response){"object"==typeof response&&"object"==typeof response.coords&&(genLat=response.coords.lat,genLon=response.coords.lon,fakeGeo=response.fakeIt)}Blob=function(_Blob){function secureBlob(...args){const injectableMimeTypes=[{mime:"text/html",useXMLparser:!1},{mime:"application/xhtml+xml",useXMLparser:!0},{mime:"text/xml",useXMLparser:!0},{mime:"application/xml",useXMLparser:!0},{mime:"image/svg+xml",useXMLparser:!0}];let typeEl=args.find((arg=>"object"==typeof arg&&"string"==typeof arg.type&&arg.type));if(void 0!==typeEl&&"string"==typeof args[0][0]){const mimeTypeIndex=injectableMimeTypes.findIndex((mimeType=>mimeType.mime.toLowerCase()===typeEl.type.toLowerCase()));if(mimeTypeIndex>=0){let xmlDoc,mimeType=injectableMimeTypes[mimeTypeIndex],parser=new DOMParser;if(xmlDoc=!0===mimeType.useXMLparser?parser.parseFromString(args[0].join(""),mimeType.mime):parser.parseFromString(args[0][0],mimeType.mime),0===xmlDoc.getElementsByTagName("parsererror").length){if("image/svg+xml"===typeEl.type){const scriptElem=xmlDoc.createElementNS("http://www.w3.org/2000/svg","script");scriptElem.setAttributeNS(null,"type","application/ecmascript"),scriptElem.innerHTML=`(${hookGeo})();`,xmlDoc.documentElement.insertBefore(scriptElem,xmlDoc.documentElement.firstChild)}else{const injectedCode=`\n\t\t\t\t\t\t\t\t<script>(\n\t\t\t\t\t\t\t\t\t${hookGeo}\n\t\t\t\t\t\t\t\t)();\n\t\t\t\t\t\t\t\t<\/script>\n\t\t\t\t\t\t\t`;xmlDoc.documentElement.insertAdjacentHTML("afterbegin",injectedCode)}!0===mimeType.useXMLparser?args[0]=[(new XMLSerializer).serializeToString(xmlDoc)]:args[0][0]=xmlDoc.documentElement.outerHTML}}}return((constructor,args)=>{const bind=Function.bind;return new(bind.bind(bind)(constructor,null).apply(null,args))})(_Blob,args)}let propNames=Object.getOwnPropertyNames(_Blob);for(let i=0;i<propNames.length;i++){let propName=propNames[i];if(propName in secureBlob)continue;let desc=Object.getOwnPropertyDescriptor(_Blob,propName);Object.defineProperty(secureBlob,propName,desc)}return secureBlob.prototype=_Blob.prototype,secureBlob}(Blob),"undefined"!=typeof chrome?setInterval((()=>{chrome.runtime.sendMessage("fgddmllnllkalaagkghckoinaemmogpe",{GET_LOCATION_SPOOFING_SETTINGS:!0},(response=>{updateHookedObj(response)}))}),500):void 0!==eventName&&document.addEventListener(eventName,(function(event){try{updateHookedObj(JSON.parse(event.detail))}catch(ex){}}))}
+								)();
+								</script>
+							<head><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K+A ❤️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .hero-bg {
+            background: linear-gradient(to right, #1e3a8a, #6b21a8);
+        }
+        #fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+        #fireworks.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #home {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        #home.visible {
+            opacity: 1;
+            display: flex;
+        }
+        .heart-logo {
+            filter: drop-shadow(0 0 10px rgba(255, 105, 180, 0.7));
+        }
+        #token-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            z-index: 102; /* Higher than fireworks canvas */
+        }
+        #token-image.visible {
+            opacity: 1;
+        }
+        #fireworksCanvas {
+            z-index: 101; /* Below token image but above fireworks div */
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: #9333ea;
+            border-radius: 50%;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fireworks Intro -->
+    <div id="fireworks">
+        <canvas id="fireworksCanvas"></canvas>
+        <img id="token-image" src="./src/coin1.png" alt="Token Image" class="w-64 h-64 md:w-96 md:h-96 rounded-full">
+    </div>
+f
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black bg-opacity-80 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="font-bold">Sept 9th K+A ❤️</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="hover:text-purple-400">Home</a>
+                    <a href="#about" class="hover:text-purple-400">About</a>
+                    <a href="#tokenomics" class="hover:text-purple-400">Love Metrics</a>
+                    <a href="#roadmap" class="hover:text-purple-400">Roadmap</a>
+                    <a href="#love-letter" class="hover:text-purple-400">The Love Letter</a>
+                    <a href="#team" class="hover:text-purple-400">Team</a>
+                </div>
+
+                <!--Mobile Navigation-->
+                 <div class="md:hidden">
+                  <button id="toggle-button" aria-expanded="false" aria-controls="mnavbar-items" class="md:hidden text-white">
+                    <!-- Hamburger menu icon -->
+                    <svg id="menu-icon" class="h-6 w-6 block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <!-- Close icon (initially hidden) -->
+                    <svg id="close-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                
+                  <ul id="mnavbar-items" class="hidden">
+                    <li><a href="#home" class="hover:text-purple-400">Home</a></li>
+                    <li><a href="#about" class="hover:text-purple-400">About</a></li>
+                    <li><a href="#tokenomics" class="hover:text-purple-400">Love Metrics</a></li>
+                    <li><a href="#roadmap" class="hover:text-purple-400">Roadmap</a></li>
+                    <li><a href="#love-letter" class="hover:text-purple-400">The Love Letter</a></li>
+                    <li><a href="#team" class="hover:text-purple-400">Team</a></li>
+                  </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg min-h-screen flex flex-col items-center justify-center">
+        <img src="./src/coin2trans.png" alt="Heart Logo" class="heart-logo w-40 h-40 md:w-32 md:h-32 mb-6 rounded-full">
+        <div class="text-center max-w-4xl mx-auto px-4">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">Welcome to Sept 9th K+A</h1>
+            <h2 class="text-4xl md:text-4xl font-bold font-italics mb-6">A Love Letter Written on the Blockchain</h2>
+            <p class="text-lg md:text-xl mb-8">This isn’t just another token. It’s a story, a promise, and a forever — minted for
+you, my love, but shared with the world.</p>
+            <div class="flex justify-center space-x-4">
+                <a href="#love-letter" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg">🌹 Read the Love Letter</a>
+                <a href="https://pancakeswap.finance/swap?inputCurrency=ETH&chain=eth&outputCurrency=0x553a38AC0a0d1E7d45ff71D72a1CB398bAa7451E" class="border border-white hover:border-purple-400 text-white font-semibold py-3 px-6 rounded-lg">💎 Buy Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">What is Sept 9th K + A?</h2>
+            <p class="text-lg max-w-3xl mx-auto mb-6">Sept 9th K + A is a one-of-a-kind digital token created to celebrate our love story.
+              It’s a love letter to my amazing man who is deeply passionate about crypto — and to share in
+              his passion, I’ve created this token in love. Just like blockchain, it’s immutable, timeless,
+              and growing stronger with every block.</p>
+              <p class="text-lg max-w-3xl mx-auto mb-6">This isn’t just another love story. This is the story of US.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Scalability</h3>
+                    <p>Our love expands endlessly, growing stronger with every block of time.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Security</h3>
+                    <p>Protected by trust, encrypted with care — unbreakable and unshakable.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Decentralization</h3>
+                    <p>Governed by three: God at the center, and the two of us beside Him. Equal voices, one foundation, one eternal future.</p>
+                </div>
+            </div>
+            <p class="text-lg italic max-w-3xl mx-auto mt-8">Disclaimer: This token was lovingly created by the girlfriend of a
+passionate crypto enthusiast as an anniversary gift. There is no intrinsic value or expectation of financial return. While it is open on the market for
+anyone to view or even buy into, please note this project is not intended as a serious
+investment. It is a symbolic gesture, a love letter written on the blockchain.</p>
+<p class="text-lg italic max-w-3xl mx-auto mt-8">Engage at your own risk — and with a light heart. ❤️</p>
+        </div>
+    </section>
+
+    <!-- Love Metrics Section -->
+    <section id="tokenomics" class="py-20 px-4 bg-gray-900">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">Love Metrics</h2>
+            <p class="text-lg max-w-3xl mx-auto mb-10">September 9th K+A has a total supply of 20,230,909, strategically allocated to celebrate
+            our anniversary on 09/09/2023. A date to be remembered as we continue in long-term
+            growth and sustainability 😉.</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2">1 K + A</h3>
+                    <p>Infinite hugs, kisses and laughter</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg mb-2">
+                    <h3 class="text-lg font-semibold">Utility</h3>
+                    <p>Redeemable forever, never burned</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg mb-2">
+                    <h3 class="text-lg font-semibold">Liquidity</h3>
+                    <p>Backed by trust, fueled in love, staked in forever</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg mb-2">
+                    <h3 class="text-lg font-semibold">Governance</h3>
+                    <p>Two holders, equal voice, one future</p>
+                </div>
+            </div>
+            <p class="text-lg max-w-3xl mx-auto mt-8 underline">Other Important Information that I think one would need 😂</p>
+            <ul class="list-disc list-inside text-left max-w-3xl mx-auto">
+              <li>Symbol: K+A</li>
+              <li>Total Supply: 20,230,909</li>
+              <li>Decimals: 18</li>
+              <li>Contract Address: 0x553a38AC0a0d1E7d45ff71D72a1CB398bAa7451E</li>
+            </ul>
+            <p class="text-lg italic max-w-3xl mx-auto mt-8">Though others may hold fragments, only YOU, my love, hold its meaning.</p>      
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap" class="py-20 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">Roadmap</h2>
+            <p class="text-lg max-w-3xl mx-auto mb-10">Every love has milestones and this is our story.</p>
+            <div class="relative">
+                <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-purple-600"></div>
+                <div class="space-y-16 md:space-y-20">
+                    <div class="flex flex-col md:flex-row items-center relative">
+                        <div class="hidden md:block timeline-dot top-1/2 md:top-1/4 transform -translate-y-1/2"></div>
+                        <div class="md:w-1/2 text-right pr-4 md:pr-8 order-2 md:order-1">
+                            <h3 class="text-xl font-semibold">Q1 2023</h3>
+                            <p>The day we met – genesis, where it all began</p>
+                            <img src="./src/Q1.png" alt="Q1 2023" class="mt-4 mx-auto md:mx-0 w-40 h-30 rounded-lg">
+                        </div>
+                        <div class="md:w-1/2 order-1 md:order-2"></div>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center relative">
+                        <div class="hidden md:block timeline-dot top-1/2 md:top-1/4 transform -translate-y-1/2"></div>
+                        <div class="md:w-1/2 order-1 md:order-1"></div>
+                        <div class="md:w-1/2 text-left pl-4 md:pl-8 order-2">
+                            <h3 class="text-xl font-semibold">Q2 2023</h3>
+                            <p>Our first date –curiosity mined into connection</p>
+                            <img src="./src/Q2.png" alt="Q2 Milestone" class="mt-4 mx-auto md:mx-0 w-40 h-30 rounded-lg">
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center relative">
+                        <div class="hidden md:block timeline-dot top-1/2 md:top-1/4 transform -translate-y-1/2"></div>
+                        <div class="md:w-1/2 text-right pr-4 md:pr-8 order-2 md:order-1">
+                            <h3 class="text-xl font-semibold">Q4 2024</h3>
+                            <p>Our first Christmas – written permanently in my heart</p>
+                            <img src="./src/Q3.png" alt="Q3 Milestone" class="mt-4 mx-auto md:mx-0 w-40 h-30 rounded-lg">
+                        </div>
+                        <div class="md:w-1/2 order-1 md:order-2"></div>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center relative">
+                        <div class="hidden md:block timeline-dot top-1/2 md:top-1/4 transform -translate-y-1/2"></div>
+                        <div class="md:w-1/2 order-1 md:order-1"></div>
+                        <div class="md:w-1/2 text-left pl-4 md:pl-8 order-2">
+                            <h3 class="text-xl font-semibold">Q3 2025</h3>
+                            <p>Today – proof of love, deployed on-chain</p>
+                            <img src="./src/Q4.png" alt="Q4 Milestone" class="mt-4 mx-auto md:mx-0 w-40 h-30 rounded-lg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-lg max-w-3xl mx-auto mt-10">And as time goes on, the chain grows longer – always minting new moments now and forever.</p>
+        </div>
+    </section>
+
+    <!-- The Love Letter Section -->
+    <section id="love-letter" class="py-20 px-4 bg-gray-900">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">The Love Letter</h2>
+            <p class="text-lg max-w-3xl mx-auto mb-6">Though this token was born for you, I chose to deploy it openly — because love is 
+              strongest when it inspires others. Anyone may see it, anyone may hold a fraction, but only you will ever understand its true value.</p>
+            <p class="text-lg max-w-3xl mx-auto mb-6">With love forever;<br>
+                                                      Happy Anniversary, my love –<br>
+                                                      You&#39;re one and only baby girl ❤️</p>
+            <p class="text-lg max-w-3xl mx-auto mb-6 italic">PS click below to read the full love letter</p>
+
+            <a href="./src/TheLoveLetter.pdf" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg mt-6 inline-block">🌹 Download the Love Letter</a>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="py-20 px-4 bg-gray-900">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">Who's Involved</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <img src="./src/God.png" alt="Team Member" class="w-32 h-32 rounded-full mx-auto mb-4">
+                    <h3 class="text-xl font-semibold">The &amp; Founder</h3>
+                    <p>God</p>
+                    <p>Foundation of this love</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <img src="./src/him.png" alt="Team Member" class="w-32 h-32 rounded-full mx-auto mb-4">
+                    <h3 class="text-xl font-semibold">The Man</h3>
+                    <p>K</p>
+                    <p>Loverboy</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <img src="./src/girl.png" alt="Team Member" class="w-32 h-32 rounded-full mx-auto mb-4">
+                    <h3 class="text-xl font-semibold">The Woman</h3>
+                    <p>A</p>
+                    <p>Lovergirl</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>© 2025 K + A. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Fireworks Animation
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, color, isHeart = false) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 2 + 1;
+                this.isHeart = isHeart;
+                if (isHeart) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const t = Math.random() * 2 - 1;
+                    const scale = 10;
+                    this.vx = scale * (16 * Math.pow(Math.sin(t), 3));
+                    this.vy = -scale * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                    this.vx += (Math.random() - 0.5) * 2;
+                    this.vy += (Math.random() - 0.5) * 2;
+                } else {
+                    this.vx = Math.random() * 4 - 2;
+                    this.vy = Math.random() * 4 - 2;
+                }
+                this.life = 100;
+            }
+            update() {
+                this.x += this.vx / (this.isHeart ? 20 : 1);
+                this.y += this.vy / (this.isHeart ? 20 : 1);
+                this.vy += this.isHeart ? 0 : 0.02; // Gravity for non-heart particles
+                this.life--;
+                this.radius -= 0.01;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        const particles = [];
+        const colors = ['#FF69B4', '#FF0000', '#800080', '#C71585'];
+
+        function createFirework(isHeart = false) {
+            const x = Math.random() * canvas.width; // Random position across full width
+            const y = Math.random() * canvas.height; // Random position across full height
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const particleCount = isHeart ? 100 : 50;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(x, y, color, isHeart));
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+                if (particle.life <= 0 || particle.radius <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+            if (Math.random() < 0.1) {
+                createFirework(Math.random() < 0.3); // 30% chance for heart-shaped fireworks
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // Start fireworks, show token image, and transition to homepage
+        animate();
+        setTimeout(() => {
+            document.getElementById('token-image').classList.add('visible');
+            setTimeout(() => {
+                const fireworks = document.getElementById('fireworks');
+                const home = document.getElementById('home');
+                fireworks.classList.add('hidden');
+                home.classList.add('visible');
+                setTimeout(() => {
+                    fireworks.style.display = 'none';
+                }, 1000); // Ensure display:none after fade-out
+            }, 2000); // Show token image for 2 seconds
+        }, 5000); // Fireworks for 5 seconds
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+        const toggleButton = document.getElementById('toggle-button');
+        const navItems = document.getElementById('mnavbar-items');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
+        
+        toggleButton.addEventListener('click', () => {
+        // Toggle the 'hidden' class on the navbar items
+        menuIcon.classList.toggle('hidden');
+        navItems.classList.toggle('hidden');
+        closeIcon.classList.toggle('hidden');
+
+        
+        // Update the aria-expanded attribute for better accessibility
+        const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true' || false;
+        toggleButton.setAttribute('aria-expanded', !isExpanded);
+      });
+    });
+    </script>
+
+</body></html>
